@@ -1,1 +1,1 @@
-C:\Users\maja.blagic\Desktop\New\ folder\Rust-BFS-Project\maze\target\debug\maze.exe: C:\Users\maja.blagic\Desktop\New\ folder\Rust-BFS-Project\maze\src\main.rs C:\Users\maja.blagic\Desktop\New\ folder\Rust-BFS-Project\maze\src\maze.rs C:\Users\maja.blagic\Desktop\New\ folder\Rust-BFS-Project\maze\src\state.rs
+C:\Users\maja.blagic\Desktop\Rust-BFS-Project\maze\target\debug\maze.exe: C:\Users\maja.blagic\Desktop\Rust-BFS-Project\maze\src\main.rs C:\Users\maja.blagic\Desktop\Rust-BFS-Project\maze\src\maze.rs C:\Users\maja.blagic\Desktop\Rust-BFS-Project\maze\src\state.rs

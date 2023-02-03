@@ -6,9 +6,11 @@ use std::{
     time::Instant,
 };
 
+
 use state::{KeyState, State};
 mod maze;
 mod state;
+
 
 pub fn costum_parse(input: String) -> VecDeque<String> {
     let split: VecDeque<String> = input.split(" ").map(|e: &str| e.to_string()).collect();
@@ -43,12 +45,14 @@ fn main() {
     }
     //maze.print();
     let start = Instant::now();
-    bfs_search(&mut maze);
+    let shortest_path = bfs_search(&mut maze);
     let duration = start.elapsed();
     println!("Time elapsed in expensive_function() is: {:?}", duration);
+
+    print_path_matrix(height, width, shortest_path);
 }
 
-pub fn bfs_search(maze: &mut maze::Maze) {
+pub fn bfs_search(maze: &mut maze::Maze) -> VecDeque<State> {
     let mut frontier: VecDeque<State> = VecDeque::new();
     let mut visited: HashSet<State> = HashSet::new();
     let mut path: HashMap<State, State> = HashMap::new();
@@ -58,7 +62,7 @@ pub fn bfs_search(maze: &mut maze::Maze) {
 
     let mut first_state = State::init(first_node, init_keys);
     let mut last_found: State = first_state.clone();
-    //Ubaci prvo stanje
+    //Push first state
     frontier.push_front(first_state.clone());
     visited.insert(first_state.clone());
 
@@ -99,13 +103,13 @@ pub fn bfs_search(maze: &mut maze::Maze) {
                 match door {
                     maze::Door::East => {
                         if new_coordinates == (cell.coordinates.0, cell.coordinates.1 + 1) {
+                            // If there is NO key to use go = false
                             go = use_key(&mut new_keys);
                             *door = maze::Door::None;
                         }
                     }
                     maze::Door::West => {
                         if new_coordinates == (cell.coordinates.0, cell.coordinates.1 - 1) {
-                            //ako ima kljuc moze ako nema ne moze
                             go = use_key(&mut new_keys);
                             *door = maze::Door::None;
                         }
@@ -113,14 +117,12 @@ pub fn bfs_search(maze: &mut maze::Maze) {
 
                     maze::Door::North => {
                         if new_coordinates == (cell.coordinates.0 - 1, cell.coordinates.1) {
-                            //ako ima kljuc moze ako nema ne moze
                             go = use_key(&mut new_keys);
                             *door = maze::Door::None;
                         }
                     }
                     maze::Door::South => {
                         if new_coordinates == (cell.coordinates.0 + 1, cell.coordinates.1) {
-                            //ako ima kljuc moze ako nema ne moze
                             go = use_key(&mut new_keys);
                             *door = maze::Door::None;
                         }
@@ -140,7 +142,7 @@ pub fn bfs_search(maze: &mut maze::Maze) {
                         new_keys.push_back(KeyState::new(new_coordinates, false).clone());
 
                         // println!(
-                        //     "Child kupi novi kljuc na ({},{}) keys len ->{}",
+                        //     "Child gets key at location (x,y)=({},{}), keys len ->{}",
                         //     new_coordinates.0,
                         //     new_coordinates.1,
                         //     new_keys.len()
@@ -161,14 +163,14 @@ pub fn bfs_search(maze: &mut maze::Maze) {
         }
     }
 
-    reconstruct_path(&mut last_found, path, &mut first_state);
+    return reconstruct_path(&mut last_found, path, &mut first_state);
 }
 
 pub fn reconstruct_path(
     last_found: &mut State,
     path: HashMap<State, State>,
     first_state: &mut State,
-) -> () {
+) -> VecDeque<State> {
     let mut visited: VecDeque<State> = VecDeque::new();
     let mut child = last_found.clone();
     let mut parent = path.get(&child).unwrap();
@@ -181,19 +183,37 @@ pub fn reconstruct_path(
         visited.push_front(parent.clone());
     }
 
-    for v in visited.iter() {
-        println!(
-            "(x,y) = ({},{}) ",
-            v.cell.coordinates.0, v.cell.coordinates.1
-        );
-        //Ispis za kljuceve
-        // for k in v.keys.iter() {
-        //     println!(
-        //         "Key found at (x,y) = ({},{}), and was used : {}",
-        //         k.coordinates.0, k.coordinates.1, k.used
-        //     );
-        // }
+    // for v in visited.iter() {
+    //     println!(
+    //         "(x,y) = ({},{}) ",
+    //         v.cell.coordinates.0, v.cell.coordinates.1
+    //     );
+    // }
+
+    return visited;
+}
+pub fn print_path_matrix(height: u32, width: u32, path: VecDeque<State>) -> () {
+ 
+    for i in 0..height {
+        for j in 0..width {
+            let num = check_cell(i, j, path.clone());
+            if num == 0 {
+                print!("({},{}) \t", i, j);
+            } else {
+                print!("🎔 {} \t", num);
+            }
+        }
+        print!("\n")
     }
+}
+pub fn check_cell(i: u32, j: u32, path: VecDeque<State>) -> i32 {
+    let mut cnt = 0;
+    for step in path.iter() {
+        if step.cell.coordinates == (i, j) {
+            cnt = cnt + 1;
+        }
+    }
+    return cnt;
 }
 pub fn check_key_taken(keys: &mut VecDeque<KeyState>, new_key: (u32, u32)) -> bool {
     for k in keys {
@@ -201,7 +221,6 @@ pub fn check_key_taken(keys: &mut VecDeque<KeyState>, new_key: (u32, u32)) -> bo
             return true;
         }
     }
-
     return false;
 }
 pub fn use_key(keys: &mut VecDeque<KeyState>) -> bool {
@@ -209,7 +228,6 @@ pub fn use_key(keys: &mut VecDeque<KeyState>) -> bool {
         for k in keys {
             if k.used == false {
                 k.used = true;
-                //println!("Using key {}", k.used);
                 return true;
             }
         }
